@@ -2,10 +2,10 @@ import random
 import timeit
 
 def heapsort( unsorted ):
-	
+
 	# Heapify the unsorted list
 	heapify( unsorted, len(unsorted) )
-	
+
 	# Sort
 	end = len(unsorted)-1
 	while end > 0:
@@ -14,10 +14,10 @@ def heapsort( unsorted ):
 		sift_down( unsorted, 0, end )
 
 def heapsort_bu( unsorted ):
-	
+
 	# Heapify the unsorted list
 	heapify( unsorted, len(unsorted) )
-	
+
 	# Sort
 	end = len(unsorted)-1
 	while end > 0:
@@ -49,16 +49,16 @@ def sift_down( a, start, end ):
 	while i_left_child( root ) <= end:
 		child = i_left_child(root)
 		swap = root
-		
+
 		if a[swap] < a[child]:
 			swap = child
-		
+
 		if child+1 <= end and a[swap] < a[child+1]:
 			swap = child+1
-		
+
 		if swap == root:
 			return
-		
+
 		else:
 			a[root], a[swap] = a[swap], a[root]
 			root = swap
@@ -89,9 +89,9 @@ def leaf_search( a, i, end ):
 	return j
 
 
-n = 1000000
-print 'Sorting', n, 'values'
-print 'Creating arrays...'
+n = 10
+# print 'Sorting', n, 'values'
+# print 'Creating arrays...'
 l1 = [random.randint(1,n) for i in range(n)]
 l2 = l1[:]
 
@@ -100,11 +100,10 @@ def test_l1():
 def test_l2():
 	heapsort_bu(l2)
 
-print 'Starting tests...'
-print 'Ordinary heapsort:', timeit.timeit( test_l1, number=1 )
-print 'Bottom up heapsort:', timeit.timeit( test_l2, number=1 )
+# print 'Starting tests...'
+# print 'Ordinary heapsort:', timeit.timeit( test_l1, number=1 )
+# print 'Bottom up heapsort:', timeit.timeit( test_l2, number=1 )
 
-
-
-
-
+a = [6, 5, 3, 1, 8, 7, 2, 4]
+heapsort(a)
+print a
