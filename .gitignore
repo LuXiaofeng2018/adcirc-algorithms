@@ -7,6 +7,5 @@
 # Unignore all dirs
 !*/
 
-# Unignore readmes and makefiles
-!README
+# Unignore makefiles
 !Makefile
