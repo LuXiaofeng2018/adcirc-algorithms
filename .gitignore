@@ -9,3 +9,7 @@
 
 # Unignore makefiles
 !Makefile
+
+# Ignore fortran object and module files
+*.o
+*.mod

@@ -1,8 +1,7 @@
-
-
 module heapsort
 implicit none
 contains
+
 integer function i_parent ( i )
     implicit none
     integer :: i
@@ -95,13 +94,5 @@ subroutine sort ( a, n )
         call sift_down( a, n, 1, e )
     enddo
 end subroutine
-
-subroutine print_array( a, n )
-    implicit none
-    integer, intent(in) :: n
-    real, dimension(n), intent(in) :: a
-    integer :: i
-    write(*,'(F13.10)')( a(i), i=1,n )
-end subroutine print_array
 
 end module heapsort

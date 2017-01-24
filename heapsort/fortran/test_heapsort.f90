@@ -10,3 +10,11 @@ program test
     call sort( x, d )
     call print_array( x(1:10), 10 )
 end program test
+
+subroutine print_array( a, n )
+    implicit none
+    integer, intent(in) :: n
+    real, dimension(n), intent(in) :: a
+    integer :: i
+    write(*,'(F13.10)')( a(i), i=1,n )
+end subroutine print_array
