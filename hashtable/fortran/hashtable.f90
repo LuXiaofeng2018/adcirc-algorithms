@@ -25,9 +25,14 @@ integer function hash ( key_str )
     end do
 end function hash
 
-!subroutine add_item ( d, key, value )
-!    implicit none
-!
-!end subroutine add_item
+subroutine add_item ( d, key, value )
+    implicit none
+    type(item), dimension(:) :: d
+    character(len=*) :: key
+    integer :: value
+    integer :: hash_value
+    hash_value = hash( key )
+    write(*,*) hash_value
+end subroutine add_item
 
 end module hashtable

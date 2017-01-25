@@ -13,3 +13,6 @@
 # Ignore fortran object and module files
 *.o
 *.mod
+
+# Ignore temporary files
+*~
