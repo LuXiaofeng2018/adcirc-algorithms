@@ -25,6 +25,10 @@ subroutine read14 ( file, agrid, np, ne, x, y, dp, nm, labels )
     integer :: element_number, nodes_per_element
     character(len=24) :: n1, n2, n3
 
+    ! Timing and formatting variables
+    real :: start, finish
+    300 FORMAT (4X, F6.3, A, 4X, A)
+
     open(unit=14, file=file, action='read')
 
     ! Read agrid
@@ -33,29 +37,40 @@ subroutine read14 ( file, agrid, np, ne, x, y, dp, nm, labels )
     ! Read info line
     read(14, fmt=*) ne, np
 
-    write(*,*) 'Reading fort.14'
-    write(*,*) np, ' nodes'
-    write(*,*) ne, ' elements'
+    write(*,*) '    ', np, ' nodes'
+    write(*,*) '    ', ne, ' elements'
 
     ! Allocate arrays
+    call cpu_time(start)
     allocate(x(np), y(np), dp(np), labels(np))
     allocate(nm(ne,3))
     call dict(d, np)
+    call cpu_time(finish)
+    write(*,300) finish-start, 's', 'Allocating arrays'
 
     ! Read the nodes
+    call cpu_time(start)
     do i = 1, np
         read(14, fmt=*) labels(i), x(i), y(i), dp(i)
         call add_item(d, labels(i), i)
     enddo
+    call cpu_time(finish)
+    write(*,300) finish-start, 's', 'Reading nodes and building dictionary'
 
+    call cpu_time(start)
     do i = 1, ne
         read(14, fmt=*) element_number, nodes_per_element, n1, n2, n3
         nm(i,1) = find( d, n1 )
         nm(i,2) = find( d, n2 )
         nm(i,3) = find( d, n3 )
     enddo
+    call cpu_time(finish)
+    write(*,300) finish-start, 's', 'Reading elements and searching dictionary'
 
+    call cpu_time(start)
     call close_dict( d )
+    call cpu_time(finish)
+    write(*,300) finish-start, 's', 'Freeing dictionary'
 
     close(14)
 

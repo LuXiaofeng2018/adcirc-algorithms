@@ -26,9 +26,11 @@ if ( iargc() >= 1 ) then
     call getarg(1, fileloc)
     fileloc = trim(fileloc)
 
+    ! Read data from fort.14 using new technique
     write(*,*) 'Reading fort.14....'
     call read14( fileloc, agrid, np, ne, x, y, dp, nm, labels )
 
+    ! Optionally write output to file
     if ( iargc() == 2) then
 
         call getarg(2, outfileloc)
@@ -46,6 +48,7 @@ if ( iargc() >= 1 ) then
 
     endif
 
+    ! Free any memory we've allocated
     write(*,*) 'Freeing memory....'
     call close14( x, y, dp, nm, labels )
 
