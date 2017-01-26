@@ -14,12 +14,7 @@ program test
 
     write(*,*) find( d, 'this is cool' )
     write(*,*) find( d, 'tristan' )
-    ! call print_dict( d )
 
     call close_dict( d )
-	! type(item), dimension(:) :: d
-	! integer :: num_items = 10
-	! d = dict( num_items )
-!	call add_item
 
 end program test

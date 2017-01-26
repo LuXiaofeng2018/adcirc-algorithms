@@ -16,3 +16,6 @@
 
 # Ignore temporary files
 *~
+
+# Ignore IntelliJ
+.idea
