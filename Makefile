@@ -9,11 +9,13 @@ hashtable_src=hashtable/fortran
 heapsort_src=heapsort/fortran
 io_src=io/fortran
 
+all: hashtable heapsort io
+
 hashtable:
 	$(compiler) \
 		-c $(hashtable_src)/hashtable.f90 \
 		-J$(obj_dir) \
-        -o $(obj_dir)/hashtable.o \
+		-o $(obj_dir)/hashtable.o \
 		$(flags)
 
 heapsort:
@@ -30,19 +32,22 @@ io: hashtable
 		-o $(obj_dir)/io.o \
 		$(flags)
 
-tests: hashtable heapsort
-	$(compiler) \
-		$(hashtable_src)/test_hashtable.f90 \
-		$(obj_dir)/hashtable.o \
-		-I$(obj_dir)  \
-	 	-o $(bin_dir)/hashtable \
-		$(flags)
+tests: test_heapsort test_hashtable test_io
 
+test_heapsort: heapsort
 	$(compiler) \
 		$(heapsort_src)/test_heapsort.f90 \
 		$(obj_dir)/heapsort.o \
 		-I$(obj_dir) \
 		-o $(bin_dir)/heapsort \
+		$(flags)
+
+test_hashtable: hashtable
+	$(compiler) \
+		$(hashtable_src)/test_hashtable.f90 \
+		$(obj_dir)/hashtable.o \
+		-I$(obj_dir)  \
+	 	-o $(bin_dir)/hashtable \
 		$(flags)
 
 test_io: io

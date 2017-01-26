@@ -3,7 +3,7 @@ program test
     implicit none
 
     integer :: i
-    type(item), allocatable, target, dimension(:) :: d
+    type(item), allocatable, target :: d(:)
 
     call dict( d, 20 )
     call add_item( d, 'test', 4 )

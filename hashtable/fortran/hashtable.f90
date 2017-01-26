@@ -24,7 +24,7 @@ contains
 
 subroutine dict ( item_array, num_items )
     implicit none
-    type(item), allocatable, dimension(:), intent(inout) :: item_array
+    type(item), allocatable, intent(inout) :: item_array(:)
     integer, intent(in) :: num_items
     integer :: i
 
