@@ -5,6 +5,7 @@ implicit none
 
 ! The fort.14 file location
 character(len=4096) :: fileloc
+character(len=4096) :: outfileloc
 
 ! Mimic mesh.F from adcirc
 character(len=80) :: agrid
@@ -20,25 +21,37 @@ character(len=24), allocatable :: labels(:)
 integer :: i
 
 ! Get fort.14 file location from command line
-if ( iargc() == 1 ) then
+if ( iargc() >= 1 ) then
 
     call getarg(1, fileloc)
     fileloc = trim(fileloc)
 
+    write(*,*) 'Reading fort.14....'
     call read14( fileloc, agrid, np, ne, x, y, dp, nm, labels )
 
-    do i = 1, np
-        write(*,*) i, x(i), y(i), dp(i)
-    enddo
-    do i = 1, ne
-        write(*,*) i, nm(i,1), nm(i,2), nm(i,3)
-    enddo
+    if ( iargc() == 2) then
 
+        call getarg(2, outfileloc)
+        outfileloc = trim(outfileloc)
+
+        open(unit=144, file=outfileloc, status='replace', action='write')
+        write(*,*) 'Writing output....'
+        do i = 1, np
+            write(144,*) i, x(i), y(i), dp(i)
+        enddo
+        do i = 1, ne
+            write(144,*) i, nm(i,1), nm(i,2), nm(i,3)
+        enddo
+        close(144)
+
+    endif
+
+    write(*,*) 'Freeing memory....'
     call close14( x, y, dp, nm, labels )
 
 else
 
-    write(*,*) 'Specify fort.14 location'
+    write(*,*) 'io [fort.14] [output.txt]'
 
 endif
 
