@@ -32,7 +32,7 @@ def genlabels ( infile, outfile ):
             e = int( line[0] )
             n1 = int( line[2] )
             n2 = int( line[3] )
-            n3 = int( line[3] )
+            n3 = int( line[4] )
 
             elements.append((e, n1, n2, n3))
 
