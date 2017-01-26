@@ -24,11 +24,13 @@ contains
 
 subroutine dict ( item_array, num_items )
     implicit none
-    integer :: num_items, i
-    type(item), allocatable, dimension(:) :: item_array
+    type(item), allocatable, dimension(:), intent(inout) :: item_array
+    integer, intent(in) :: num_items
+    integer :: i
 
     allocate( item_array(num_items) )
     do i = 1, num_items
+        item_array(i)%key = ''
         item_array(i)%value = 0
         item_array(i)%empty = .true.
         nullify(item_array(i)%next)
@@ -38,8 +40,8 @@ end subroutine dict
 
 integer function find ( d, key )
     implicit none
-    type(item), allocatable, target, dimension(:) :: d
-    character(len=*) :: key
+    type(item), allocatable, target, intent(inout) :: d(:)
+    character(len=*), intent(in) :: key
     type(item), pointer :: current_item
     integer :: hash_value, index
 
@@ -67,7 +69,7 @@ end function find
 
 subroutine close_dict ( d )
     implicit none
-    type(item), allocatable, target, dimension(:) :: d
+    type(item), allocatable, target, intent(inout) :: d(:)
     integer :: i
     do i = 1, size(d)
         if ( associated(d(i)%next) ) call remove_item( d(i)%next )
@@ -77,9 +79,10 @@ end subroutine close_dict
 
 subroutine add_item ( d, key, value )
     implicit none
-    type(item), allocatable, target, dimension(:) :: d
-    character(len=*) :: key
-    integer :: value, hash_value, index
+    type(item), allocatable, target, intent(inout) :: d(:)
+    character(len=*), intent(in) :: key
+    integer, intent(in) :: value
+    integer :: hash_value, index
     type(item), pointer :: current_item
 
     ! Generate hash and calculate index
@@ -112,7 +115,7 @@ end subroutine add_item
 
 subroutine print_dict ( d )
     implicit none
-    type(item), allocatable, dimension(:) :: d
+    type(item), allocatable, target, intent(inout) :: d(:)
     type(item), pointer :: next_item
     integer :: i, depth
     do i = 1, size( d )
@@ -145,7 +148,8 @@ end subroutine print_dict
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 recursive subroutine remove_item ( i )
-    type(item), pointer :: i
+    implicit none
+    type(item), pointer, intent(inout) :: i
     if ( associated(i%next) ) call remove_item( i%next )
     deallocate( i )
 end subroutine remove_item
