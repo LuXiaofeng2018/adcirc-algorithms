@@ -1,4 +1,4 @@
-program test
+program io_hash
 use hashtable
 use io
 implicit none
@@ -49,13 +49,13 @@ if ( iargc() >= 1 ) then
     endif
 
     ! Free any memory we've allocated
-    write(*,*) 'Freeing memory....'
     call close14( x, y, dp, nm, labels )
+    write(*,*) 'Done.'
 
 else
 
-    write(*,*) 'io [fort.14] [output.txt]'
+    write(*,*) 'io_hash [fort.14] [output.txt]'
 
 endif
 
-end program test
+end program io_hash

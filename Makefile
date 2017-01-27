@@ -18,11 +18,27 @@ hashtable:
 		-o $(obj_dir)/hashtable.o \
 		$(flags)
 
+hashtable_tests: hashtable
+	$(compiler) \
+		$(hashtable_src)/hashtable_test.f90 \
+		$(obj_dir)/hashtable.o \
+		-I$(obj_dir)  \
+	 	-o $(bin_dir)/hashtable \
+		$(flags)
+
 heapsort:
 	$(compiler) \
 		-c $(heapsort_src)/heapsort.f90 \
 		-J$(obj_dir) \
 		-o $(obj_dir)/heapsort.o \
+		$(flags)
+
+heapsort_tests: heapsort
+	$(compiler) \
+		$(heapsort_src)/heapsort_test.f90 \
+		$(obj_dir)/heapsort.o \
+		-I$(obj_dir) \
+		-o $(bin_dir)/heapsort \
 		$(flags)
 
 io: hashtable
@@ -32,32 +48,20 @@ io: hashtable
 		-o $(obj_dir)/io.o \
 		$(flags)
 
-tests: test_heapsort test_hashtable test_io
-
-test_heapsort: heapsort
+io_tests: io
 	$(compiler) \
-		$(heapsort_src)/test_heapsort.f90 \
-		$(obj_dir)/heapsort.o \
-		-I$(obj_dir) \
-		-o $(bin_dir)/heapsort \
-		$(flags)
-
-test_hashtable: hashtable
-	$(compiler) \
-		$(hashtable_src)/test_hashtable.f90 \
-		$(obj_dir)/hashtable.o \
-		-I$(obj_dir)  \
-	 	-o $(bin_dir)/hashtable \
-		$(flags)
-
-test_io: io
-	$(compiler) \
-		$(io_src)/test_io.f90 \
+		$(io_src)/io_hash_test.f90 \
 		$(obj_dir)/io.o \
 		$(obj_dir)/hashtable.o \
 		-I$(obj_dir) \
-		-o $(bin_dir)/io \
+		-o $(bin_dir)/io_hash \
 		$(flags)
+	$(compiler) \
+		$(io_src)/io_normal_test.f90 \
+		-o $(bin_dir)/io_normal \
+		$(flags)
+
+tests: heapsort_tests hashtable_tests io_tests
 
 clean:
 	rm $(obj_dir)/*.mod
