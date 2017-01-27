@@ -22,8 +22,7 @@ subroutine read14 ( file, agrid, np, ne, x, y, dp, nm, labels )
 
     type(item), allocatable, target :: d(:)
     integer :: i
-    integer :: element_number, nodes_per_element
-    character(len=24) :: n1, n2, n3
+    character(len=24) :: element_number, nodes_per_element, n1, n2, n3
 
     ! Timing and formatting variables
     real :: start, finish
