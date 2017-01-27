@@ -1,5 +1,5 @@
 program io_hash
-use hashtable
+use hashtable_str
 use io
 implicit none
 

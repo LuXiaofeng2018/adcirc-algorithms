@@ -1,5 +1,5 @@
 module io
-use hashtable
+use hashtable_str
 implicit none
 
 private

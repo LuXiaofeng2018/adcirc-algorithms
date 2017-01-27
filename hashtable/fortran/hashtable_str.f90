@@ -1,4 +1,4 @@
-module hashtable
+module hashtable_str
 implicit none
 
 private
@@ -165,4 +165,4 @@ integer function hash ( key_str )
     end do
 end function hash
 
-end module hashtable
+end module hashtable_str

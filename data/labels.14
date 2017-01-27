@@ -1,5 +1,5 @@
- Quarter Annular Grid - Example 1           ! ALPHANUMERIC DESCRIPTOR FOR GRID FILE                   
- 96  63                                     ! NE,NP - NUMBER OF ELEMENTS AND NUMBER OF NODAL POINTS   
+Quarter Annular Grid - Example 1           ! ALPHANUMERIC DESCRIPTOR FOR GRID FILE
+96  63                                     ! NE,NP - NUMBER OF ELEMENTS AND NUMBER OF NODAL POINTS
 one	60960.0	0.0	3.048
 two	76200.0	0.0	4.7625
 three	91440.0	0.0	6.858
@@ -159,3 +159,39 @@ sixty-three	0.0	152400.0	19.05
 94	3	fifty-four	fifty-five	sixty-two
 95	3	sixty-two	fifty-five	fifty-six
 96	3	sixty-two	fifty-six	sixty-three
+1                    ! NOPE - TOTAL NUMBER OF OPEN BOUNDARY FORCING SEGMENTS
+9                    ! NETA - TOTAL NUMBER OF OPEN BOUNDARY FORCING NODES
+9                    ! NUMBER OF NODES ON OPEN BOUNDARY FORCING SEGMENT 1
+seven	! BEGINNING NODE NUMBER ON OPEN BOUNDARY 1
+fourteen	
+twenty-one	
+twenty-eight	
+thirty-five	
+forty-two	
+forty-nine	
+fifty-six	
+sixty-three	! ENDING NODE NUMBER ON OPEN BOUNDARY 1
+1                    ! NBOU - TOTAL NUMBER OF LAND BOUNDARY SEGMENTS INCLUDING ISLAND SEGMENTS
+21                   ! NVEL - TOTAL NUMBER OF LAND BOUNDARY NODES
+21 0                 ! NUMBER OF NODES IN LAND BOUNDARY NO. 1 AND BOUNDARY TYPE (MAINLAND)
+sixty-three	! BEGINNING NODE NUMBER OF LAND BOUNDARY NO. 1
+sixty-two	
+sixty-one	
+sixty	
+fifty-nine	
+fifty-eight	
+fifty-seven	
+fifty	
+forty-three	
+thirty-six	
+twenty-nine	
+twenty-two	
+fifteen	
+eight	
+one	
+two	
+three	
+four	
+five	
+six	
+seven	! END NODE NUMBER OF BOUNDARY 1

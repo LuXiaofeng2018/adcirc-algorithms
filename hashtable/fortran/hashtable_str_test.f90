@@ -1,5 +1,5 @@
 program test
-    use hashtable
+    use hashtable_str
     implicit none
 
     integer :: i
