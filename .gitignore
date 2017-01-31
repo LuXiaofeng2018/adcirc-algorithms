@@ -19,3 +19,6 @@
 
 # Ignore IntelliJ
 .idea
+
+# Ignore unnecessary python files
+*.pyc
