@@ -1,6 +1,67 @@
 import sys
 import math
-import matplotlib.pyplot as plt
+
+class FortND:
+
+    def __init__( self, fortnd ):
+
+        self.f = open( fortnd, 'r' )
+        self.f.readline()
+
+        info_line = self.f.readline().split()
+
+        self.num_datasets = int( info_line[0] )
+        self.num_records = int( info_line[1] )
+        self.ts_interval = int( info_line[3] )
+        self.ts = float( info_line[2] ) / self.ts_interval
+        self.n_dims = int( info_line[4] )
+
+        self.current_dataset = 0
+
+    def dt( self ):
+
+        return self.ts
+
+    def num_nodes( self ):
+
+        return self.num_records
+
+    def next_timestep( self ):
+
+        if self.current_dataset < self.num_datasets:
+
+            data = dict()
+
+            header = self.f.readline().split()
+            data[ 'model_time' ] = float( header[0] )
+            data[ 'model_timestep' ] = int( header[1] )
+
+            for i in range( self.num_records ):
+
+                dat = self.f.readline().split()
+
+                if self.n_dims == 1:
+                    data[ int( dat[0] ) ] = float( dat[1] )
+                if self.n_dims == 2:
+                    data[ int( dat[0] ) ] = ( float( dat[1] ), float( dat[2] ) )
+                if self.n_dims == 3:
+                    data[ int( dat[0] ) ] = ( float( dat[1] ), float( dat[2] ), float( dat[2] ) )
+
+            self.current_dataset += 1
+
+            return data
+
+        else:
+
+            return None
+
+    def percent_read( self ):
+
+        return 100 * ( float(self.current_dataset) / float(self.num_datasets) )
+
+    def __del__( self ):
+
+        self.f.close()
 
 class Fort14:
 
@@ -64,102 +125,144 @@ class Fort14:
 
                 self.flow_boundaries.append( segment )
 
-def calculate_residuals ( f14, residuals_file, output_file ):
+def calculate_residuals ( f14, prev_ele, curr_ele, prev_vel, curr_vel, output_file ):
 
     fort14 = Fort14( f14 )
+    prev_ele = FortND( prev_ele )
+    curr_ele = FortND( curr_ele )
+    prev_vel = FortND( prev_vel )
+    curr_vel = FortND( curr_vel )
 
-    with open( residuals_file, 'r' ) as r, open( output_file, 'w' ) as w:
+    if prev_ele.dt() == curr_ele.dt() and curr_ele.dt() == prev_vel.dt() and prev_vel.dt() == curr_vel.dt():
+        dt = prev_ele.dt()
+    else:
+        print 'Data files do not have the same timestep'
+        return
 
-        dt = float( r.readline().split()[0] )
+    if ( prev_ele.num_nodes() != curr_ele.num_nodes() or
+         curr_ele.num_nodes() != prev_vel.num_nodes() or
+         prev_vel.num_nodes() != curr_vel.num_nodes() ):
 
-        current = 0
-        data = dict()
+        print 'Data files do not have the same number of nodes'
+        return
 
-        for line in r:
+    # Define a check for -99999 values
+    def is_dry(node):
+        for k in ['e0', 'e1', 'u0', 'u1', 'v0', 'v1']:
+            if node[k] == -99999:
+                return True
+        return False
 
-            if current == 0:
+    with open( output_file, 'w' ) as w:
 
-                ts = line.split()[1]
-                current += 1
+        p_ele = prev_ele.next_timestep()
+        c_ele = curr_ele.next_timestep()
+        p_vel = prev_vel.next_timestep()
+        c_vel = curr_vel.next_timestep()
 
-            elif current <= fort14.num_nodes:
+        while p_ele is not None and c_ele is not None and p_vel is not None and c_vel is not None:
 
-                dat = line.split()
+            print 'Processing dataset ' + str(prev_ele.current_dataset) + '/' + str(prev_ele.num_datasets) + '\t' + str( prev_ele.percent_read() ) + '% complete'
 
-                data[ int( dat[0] ) ] = map( lambda x: float(x), dat[1:len(dat)] )
+            w.write( 'Timestep {0}\n'.format( p_ele[ 'model_timestep' ] ) )
 
-                current += 1
+            for element in fort14.element_keys:
 
-                if current > fort14.num_nodes:
+                n1, n2, n3 = fort14.elements[ element ]
 
-                    w.write('Timestep {}\n'.format(ts))
+                node1 = dict(
+                    x = fort14.nodes[ n1 ][0],
+                    y = fort14.nodes[ n1 ][1],
+                    z = fort14.nodes[ n1 ][2],
+                    e0 = p_ele[ n1 ],
+                    e1 = c_ele[ n1 ],
+                    u0 = p_vel[ n1 ][0],
+                    v0 = p_vel[ n1 ][1],
+                    u1 = c_vel[ n1 ][0],
+                    v1 = c_vel[ n1 ][1]
+                )
+                node2 = dict(
+                    x=fort14.nodes[ n2 ][0],
+                    y=fort14.nodes[ n2 ][1],
+                    z=fort14.nodes[ n2 ][2],
+                    e0=p_ele[ n2 ],
+                    e1=c_ele[ n2 ],
+                    u0=p_vel[ n2 ][0],
+                    v0=p_vel[ n2 ][1],
+                    u1=c_vel[ n2 ][0],
+                    v1=c_vel[ n2 ][1]
+                )
+                node3 = dict(
+                    x = fort14.nodes[ n3 ][0],
+                    y = fort14.nodes[ n3 ][1],
+                    z = fort14.nodes[ n3 ][2],
+                    e0 = p_ele[ n3 ],
+                    e1 = c_ele[ n3 ],
+                    u0 = p_vel[ n3 ][0],
+                    v0 = p_vel[ n3 ][1],
+                    u1 = c_vel[ n3 ][0],
+                    v1 = c_vel[ n3 ][1]
+                )
 
-                    for element in fort14.element_keys:
+                e1 = [ node1, node2 ]
+                e2 = [ node2, node3 ]
+                e3 = [ node3, node1 ]
 
-                        n1, n2, n3 = fort14.elements[ element ]
+                if is_dry( node1 ) or is_dry( node2 ) or is_dry( node3 ):
+                    w.write('{0}\t{1}\n'.format(element, -99999))
+                    continue
 
-                        node1 = dict()
-                        node2 = dict()
-                        node3 = dict()
+                # Calculate average elevation for each timestep
+                xi0 = (node1['e0'] + node2['e0'] + node3['e0']) / 3.0
+                xi1 = (node1['e1'] + node2['e1'] + node3['e1']) / 3.0
 
-                        node1['x'], node1['y'], node1['z'] = fort14.nodes[ n1 ]
-                        node2['x'], node2['y'], node2['z'] = fort14.nodes[ n2 ]
-                        node3['x'], node3['y'], node3['z'] = fort14.nodes[ n3 ]
+                # Calculate area of the element
+                area = 0.5 * abs((node1['x'] - node3['x']) * (node2['y'] - node1['y']) - (node1['x'] - node2['x']) * (
+                node3['y'] - node1['y']))
 
-                        node1['e0'], node1['u0'], node1['v0'], node1['e1'], node1['u1'], node1['v1'] = data[ n1 ]
-                        node2['e0'], node2['u0'], node2['v0'], node2['e1'], node2['u1'], node2['v1'] = data[ n2 ]
-                        node3['e0'], node3['u0'], node3['v0'], node3['e1'], node3['u1'], node3['v1'] = data[ n3 ]
+                # Calculate Qnets
+                Qnet0 = 0
+                Qnet1 = 0
+                for edge in [e1, e2, e3]:
+                    # Calculate edge length
+                    l = math.sqrt((edge[1]['x'] - edge[0]['x']) ** 2 + (edge[1]['y'] - edge[0]['y']) ** 2)
 
-                        e1 = [ node1, node2 ]
-                        e2 = [ node2, node3 ]
-                        e3 = [ node3, node1 ]
+                    # Calculate normal vector
+                    norm = ((edge[1]['y'] - edge[0]['y']) / l, -(edge[1]['x'] - edge[0]['x']) / l)
+
+                    # Calculate normalized velocities at nodes
+                    U0n0 = edge[0]['u0'] * norm[0] + edge[0]['v0'] * norm[1]
+                    U0n1 = edge[1]['u0'] * norm[0] + edge[1]['v0'] * norm[1]
+                    U1n0 = edge[0]['u1'] * norm[0] + edge[0]['v1'] * norm[1]
+                    U1n1 = edge[1]['u1'] * norm[0] + edge[1]['v1'] * norm[1]
+
+                    # Calculate water column depth at each node
+                    H0n0 = edge[0]['z'] + edge[0]['e0']
+                    H0n1 = edge[1]['z'] + edge[1]['e0']
+                    H1n0 = edge[0]['z'] + edge[0]['e1']
+                    H1n1 = edge[1]['z'] + edge[1]['e1']
+
+                    # Add contribution to Qnets
+                    Qnet0 += (l / 6.0) * (2 * H0n0 * U0n0 + H0n0 * U0n1 + H0n1 * U0n0 + 2 * H0n1 * U0n1)
+                    Qnet1 += (l / 6.0) * (2 * H1n0 * U1n0 + H1n0 * U1n1 + H1n1 * U1n0 + 2 * H1n1 * U1n1)
+
+                # Calculate approximation of time integral to get Qnet
+                Qnet = 0.5 * (Qnet0 + Qnet1) * dt
+
+                # Calculate residal
+                residual = area * (xi1 - xi0) + Qnet
+
+                # Write residual value to file
+                w.write('{0}\t{1}\n'.format(element, residual))
+
+            p_ele = prev_ele.next_timestep()
+            c_ele = curr_ele.next_timestep()
+            p_vel = prev_vel.next_timestep()
+            c_vel = curr_vel.next_timestep()
 
 
-                        # Calculate average elevation for each timestep
-                        xi0 = ( node1['e0'] + node2['e0'] + node3['e0'] ) / 3.0
-                        xi1 = ( node1['e1'] + node2['e1'] + node3['e1'] ) / 3.0
-
-                        # Calculate area of the element
-                        area = 0.5 * abs( (node1['x']-node3['x'])*(node2['y']-node1['y']) - (node1['x']-node2['x'])*(node3['y']-node1['y']) )
-
-                        # Calculate Qnets
-                        Qnet0 = 0
-                        Qnet1 = 0
-                        for edge in [ e1, e2, e3 ]:
-
-                            # Calculate edge length
-                            l = math.sqrt( ( edge[1]['x'] - edge[0]['x'] )**2 + ( edge[1]['y'] - edge[0]['y'] )**2 )
-
-                            # Calculate normal vector
-                            norm = ( ( edge[1]['y'] - edge[0]['y'] ) / l, -( edge[1]['x'] - edge[0]['x'] ) / l )
-
-                            # Calculate normalized velocities at nodes
-                            U0n0 = edge[0]['u0'] * norm[0] + edge[0]['v0'] * norm[1]
-                            U0n1 = edge[1]['u0'] * norm[0] + edge[1]['v0'] * norm[1]
-                            U1n0 = edge[0]['u1'] * norm[0] + edge[0]['v1'] * norm[1]
-                            U1n1 = edge[1]['u1'] * norm[0] + edge[1]['v1'] * norm[1]
-
-                            # Calculate water column depth at each node
-                            H0n0 = edge[0]['z'] + edge[0]['e0']
-                            H0n1 = edge[1]['z'] + edge[1]['e0']
-                            H1n0 = edge[0]['z'] + edge[0]['e1']
-                            H1n1 = edge[1]['z'] + edge[1]['e1']
-
-                            # Add contribution to Qnets
-                            Qnet0 += ( l / 6.0 ) * ( 2*H0n0*U0n0 + H0n0*U0n1 + H0n1*U0n0 + 2*H0n1*U0n1 )
-                            Qnet1 += ( l / 6.0 ) * ( 2*H1n0*U1n0 + H1n0*U1n1 + H1n1*U1n0 + 2*H1n1*U1n1 )
-
-                        # Calculate approximation of time integral to get Qnet
-                        Qnet = 0.5 * ( Qnet0 + Qnet1 ) * dt
-
-                        # Calculate residal
-                        residual = area * ( xi1 - xi0 ) + Qnet
-
-                        # Write residual value to file
-                        w.write( '{}\t{}\n'.format( element, residual ) )
-
-                    current = 0
 
 if __name__ == '__main__':
 
-    calculate_residuals( sys.argv[1], sys.argv[2], sys.argv[3] )
+    # fort.14 fort.6363 fort.63 fort.6464 fort.64 output.txt
+    calculate_residuals( sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6] )
